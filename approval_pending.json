@@ -1,8 +1,12 @@
 {
-  "status": "pending",
-  "created_at": "2026-05-20T11:18:21.980283",
+  "status": "approved",
+  "created_at": "2026-06-12T13:55:17.413565",
   "period_year": "2026",
   "period_month": "04",
   "total_records": 400,
-  "enriched_file": "/home/runner/work/consar-siefore-agent/consar-siefore-agent/consar_latest_month_enriched.json"
+  "enriched_file": "/Users/lvc/AI Scripts/consar-siefore-agent/consar_latest_month_enriched.json",
+  "approved_at": "2026-06-12T13:55:20.681059",
+  "backup_file": "/Users/lvc/AI Scripts/consar-siefore-agent/backups/consar_siefores_backup_20260612_135520.json",
+  "new_records_added": 400,
+  "total_records_in_db": 35480
 }

@@ -78,13 +78,18 @@ class AforePDFReport(FPDF):
                         style.emphasis = "BOLD"
                         style.fill_color = (240, 240, 240)
 
-                    # Check for negative numbers
+                    # Check for negative numbers. Handles plain numbers AND
+                    # compound cells like "$-34M (-4.4%)" / "-5.5%" (the old
+                    # float() parse threw on those, silently skipping the red).
                     clean_str = item_str.replace('$', '').replace('%', '').replace(',', '').replace('M', '')
-                    try:
-                        if float(clean_str) < 0:
-                            style.color = (200, 0, 0) # Red
-                    except ValueError:
-                        pass
+                    is_negative = clean_str.strip().startswith('-')
+                    if not is_negative:
+                        try:
+                            is_negative = float(clean_str) < 0
+                        except ValueError:
+                            pass
+                    if is_negative:
+                        style.color = (200, 0, 0)  # Red
 
                     row.cell(item_str, style=style)
         self.ln(5)
