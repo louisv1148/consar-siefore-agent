@@ -1,8 +1,8 @@
 {
   "status": "pending",
-  "created_at": "2026-06-15T14:34:41.856264",
+  "created_at": "2026-06-16T13:05:30.562927",
   "period_year": "2026",
-  "period_month": "04",
+  "period_month": "05",
   "total_records": 400,
   "enriched_file": "/home/runner/work/consar-siefore-agent/consar-siefore-agent/consar_latest_month_enriched.json"
 }
