@@ -15,3 +15,6 @@ Do this OUTSIDE the launchd window (before Sept 16 or after Sept 22) so a mid-re
 
 ## Resume
 Open this repo's window, read this file. Note: dirty JSON in this repo is launchd run output, not abandoned work — don't "clean" it.
+
+## Note (2026-08-31, hq session)
+Local uncommitted launchd JSON output conflicted with newer GitHub-Actions data on the remote; working tree now matches origin/master (`8d8edbc`). The old local output is preserved in `stash@{0}` ("hq-sweep: launchd run output preserved during rebase") — inspect or drop it during the hardening pass. Two older WIP stashes also exist. Untracked `consar_status_latest.json` left in place.
