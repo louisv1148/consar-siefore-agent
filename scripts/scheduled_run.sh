@@ -34,6 +34,26 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/Library/Frameworks/Python.framewo
 
 log() { echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] $*" | tee -a "$LOG"; }
 
+# --- Heartbeat to the homepage job_run ledger (audit R0.5-a, 2026-09-07) -----
+# Every scheduled job on this laptop reports one row per run; the morning
+# dashboard flags any job whose last SUCCESS is older than config/jobs.json says
+# (consar-monthly: 35 days). A "no new data" exit 0 IS a successful run (the
+# job did its check); exit 2 (variance gate) is ok=false so the human stop-point
+# surfaces on the dashboard, not only in this log. Framework python explicitly:
+# homebrew's python3 (first on PATH above) has no psycopg. Best-effort: never
+# changes this script's exit code.
+HB_PY=/Library/Frameworks/Python.framework/Versions/3.13/bin/python3
+HB_T0=$(date +%Y-%m-%dT%H:%M:%S%z)
+heartbeat() {  # $1 = exit code of the run
+  local rc=$1 ok=false outcome=failed
+  case "$rc" in 0) ok=true; outcome=ok;; 2) outcome=needs-review;; esac
+  ( cd "$HOMEPAGE_DIR" && set -a && . ./.env 2>/dev/null; set +a
+    printf '{"action":"record","job":"consar-monthly","ok":%s,"started_at":"%s","detail":{"outcome":"%s","exit":%s,"log":"%s"}}' \
+      "$ok" "$HB_T0" "$outcome" "$rc" "$LOG" \
+      | "$HB_PY" -m lib.crm.job_run >>"$LOG" 2>&1 ) || true
+}
+trap 'heartbeat $?' EXIT
+
 log "=== CONSAR scheduled run starting ==="
 cd "$AGENT_DIR"
 
