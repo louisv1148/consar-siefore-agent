@@ -49,14 +49,40 @@ HISTORY_FILE = os.environ.get(
 )
 
 # Grouping rules for the report view (raw categories are stored as published).
+# The member names MUST match the SISET category names exactly — _grouped() skips
+# members it cannot find, so a stale name silently drops its weight from the
+# report. "Deuda Privada Nacional" was such a name: SISET publishes the line as
+# "Deuda Nacional - Corporativa y Bancaria", so 11.34% of the system portfolio
+# went unreported until 2026-09-17. The GROUPS_TOTAL check below is the guard.
 GROUPS = {
     "Renta variable pública": ["Renta Variable Nacional", "Renta Variable Internacional"],
-    "Renta fija": ["Deuda Privada Nacional", "Deuda Gubernamental", "Deuda Internacional"],
+    "Renta fija": [
+        "Deuda Nacional - Corporativa y Bancaria",
+        "Deuda Gubernamental",
+        "Deuda Internacional",
+    ],
     "Mercancías": ["Mercancías"],
     "Estructurados": ["Estructurados"],
     "FIBRAS": ["FIBRAS"],
     "Otros Activos": ["Otros Activos"],
 }
+
+# The nine top-level SISET categories partition the portfolio: they must sum to
+# 100% of net assets. Anything outside this tolerance means a category was
+# renamed, dropped, or double-counted. Every name here must appear in exactly
+# one GROUPS bucket; the report prints a TOTAL and flags the difference.
+CARTERA_TOP_LEVEL = [
+    "Renta Variable Nacional",
+    "Renta Variable Internacional",
+    "Mercancías",
+    "Deuda Nacional - Corporativa y Bancaria",
+    "Deuda Gubernamental",
+    "Deuda Internacional",
+    "Estructurados",
+    "FIBRAS",
+    "Otros Activos",
+]
+GROUPS_TOTAL_TOLERANCE = 0.5
 
 MONTHS_ES_HDR = {  # "Ene-2019" header → month number
     "ene": "01", "feb": "02", "mar": "03", "abr": "04", "may": "05", "jun": "06",
@@ -219,14 +245,23 @@ def report():
 
     print(f"CONSAR cartera del sistema — {latest}  (fuente: SISET md=18, % de activos netos)")
     print(f"{'':28} {'ahora':>7} {'MoM':>7} {'YoY':>7}")
+    total = 0.0
     for g, seriesd in groups.items():
         cur = seriesd.get(latest)
         if cur is None:
             continue
+        total += cur
         mom = cur - seriesd[prev] if prev and prev in seriesd else None
         yy = cur - seriesd[yoy] if yoy in seriesd else None
         fmt = lambda d: f"{d:+.2f}" if d is not None else "  —  "
         print(f"  {g:<26} {cur:>6.2f}% {fmt(mom):>7} {fmt(yy):>7}")
+    print(f"  {'TOTAL':<26} {total:>6.2f}%")
+    if abs(total - 100.0) > GROUPS_TOTAL_TOLERANCE:
+        known = {m for members in GROUPS.values() for m in members}
+        missing = [c for c in CARTERA_TOP_LEVEL if c not in known]
+        print(f"  ⚠️  los grupos suman {total:.2f}%, no 100% — falta peso sin agrupar.")
+        if missing:
+            print(f"      categorías top-level fuera de GROUPS: {', '.join(missing)}")
     # raw detail for the three Louis tracks most
     print("\n  detalle:")
     for c in ("Renta Variable Internacional", "Estructurados", "FIBRAS"):

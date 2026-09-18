@@ -1,0 +1,21 @@
+{
+  "schema": "consar.status.v1",
+  "period": "2026-08",
+  "generated_at": "2026-09-17T16:04:51Z",
+  "records": 400,
+  "fx_eom": 17.0147,
+  "total_aum_usd_b": 508.6,
+  "aum_by_afore_usd_b": {
+    "Azteca": 23.7,
+    "Banamex": 82.8,
+    "Coppel": 38.7,
+    "Inbursa": 12.6,
+    "Invercap": 20.7,
+    "PensionISSSTE": 33.6,
+    "Principal": 26.4,
+    "Profuturo": 100.8,
+    "SURA": 87.0,
+    "XXI Banorte": 82.4
+  },
+  "crm_updated": true
+}

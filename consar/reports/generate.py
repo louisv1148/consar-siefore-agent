@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 from consar.config import HISTORICAL_DB
+from consar.reports.modules import cartera as cartera_section
 from consar.reports.modules.data import AforeDataLoader
 from consar.reports.modules.calculator import AUMCalculator
 from consar.reports.modules.charts import ChartGenerator
@@ -112,6 +113,46 @@ def main():
         )
         pdf.add_table(headers, rows, col_widths=[60, 60, 40])
         pdf.ln(5)
+
+        # --- SYSTEM PORTFOLIO COMPOSITION (CONSAR SISET md=18) ---
+        # Read-only: whatever `cartera --update` last wrote. Skipped with a note
+        # when the file is missing or lags the report period, so a stale cartera
+        # never blocks the AUM report.
+        composition, skip_reason = cartera_section.load_composition(
+            report_period=f"{year}-{month}"
+        )
+        if composition:
+            # Title before add_page: header() draws with whatever is set at the
+            # time the page is created.
+            pdf.set_header_title(f"System Portfolio Composition - {currency}")
+            pdf.add_page()
+            pdf.chapter_title("System Portfolio Composition")
+            pdf.chapter_body(
+                f"Share of SIEFORE net assets by asset class, {composition['period']}. "
+                "Source: CONSAR SISET (md=18), monthly series since January 2019. "
+                "MoM and YoY are changes in percentage points."
+            )
+            pdf.ln(3)
+
+            warning = cartera_section.integrity_note(composition)
+            if warning:
+                pdf.chapter_body(warning)
+                pdf.ln(3)
+
+            market_total = next(
+                (row for row in total_assets_metrics[currency]['ytd'][currency]
+                 if row['afore'] == "MARKET TOTAL"),
+                None
+            )
+            headers, rows = cartera_section.build_table(
+                composition,
+                currency,
+                total_aum_millions=market_total['end_value'] if market_total else None
+            )
+            pdf.add_table(headers, rows, col_widths=[62, 30, 24, 24, 34])
+            pdf.ln(5)
+        else:
+            print(f"   Skipping portfolio composition section: {skip_reason}")
 
         for concept in concepts:
             key = concept['key']
