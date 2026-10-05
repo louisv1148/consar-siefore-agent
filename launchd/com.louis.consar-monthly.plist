@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.louis.consar-monthly</string>
+
+    <!-- Runs scripts/scheduled_run.sh. The script is idempotent: it no-ops when
+         CONSAR has no new data (download watermark unchanged) or the release
+         already exists. So firing every day on the 16th-22nd safely implements
+         "first business day after the 15th, retry daily until data is found"
+         without launchd needing to compute business days. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/lvc/AI Scripts/consar-siefore-agent/scripts/scheduled_run.sh</string>
+    </array>
+
+    <!-- 10:00 local on each of days 16-22. CONSAR publishes ~the 19th; this
+         window catches it and retries daily. launchd runs a missed job once on
+         wake if the Mac was asleep at the scheduled minute. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Day</key><integer>16</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>17</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>18</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>19</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>20</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>21</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+        <dict><key>Day</key><integer>22</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>0</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/lvc/AI Scripts/consar-siefore-agent/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/lvc/AI Scripts/consar-siefore-agent/logs/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
